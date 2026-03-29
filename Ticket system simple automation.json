@@ -1,0 +1,324 @@
+{
+  "name": "Ticket system simple automation",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -288,
+        -16
+      ],
+      "id": "2a947825-20bb-4961-9fbf-1830e8c85610",
+      "name": "Telegram Trigger",
+      "webhookId": "e0ef8841-b507-4549-a38e-8ae633475a65",
+      "credentials": {
+        "telegramApi": {
+          "id": "w8K6GOdrJACOQasW",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "llama3.2:latest",
+          "mode": "list",
+          "cachedResultName": "llama3.2:latest"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are an IT support classifier. \nRead the user’s message and output ONLY the problem type from the following list:\n\n- Hardware problem\n- Network problem\n- Software problem\n- Account/Access problem\n- Peripheral problem\n- Email/Communication problem\n- Security problem\n- Other problem\n\nDo not add explanations, punctuation, or extra text. \nReturn exactly one category from the list above.\nThe user's message is : {{ $json.message.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.ollama",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -16
+      ],
+      "id": "42e859aa-a9dc-47fd-9fb6-eb627e2cd8ad",
+      "name": "Message a model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "xHuYe0MDGOs9IpBW",
+          "name": "Local Ollama service"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Map problem types to IT helpers\nconst itHelpers = {\n  \"Hardware problem\": \"hardware_team@company.com\",\n  \"Network problem\": \"dodomaged4@yahoo.com\",\n  \"Software problem\": \"software_team@company.com\",\n  \"Account/Access problem\": \"accounts_team@company.com\",\n  \"Peripheral problem\": \"peripherals_team@company.com\",\n  \"Email/Communication problem\": \"email_team@company.com\",\n  \"Security problem\": \"security_team@company.com\",\n  \"Other problem\": \"general_it@company.com\"\n};\n\n// Example inputs (replace with actual AI output + user message)\nconst aiOutput = $input.first().json.content; // <-- classification result from AI node\nconst userMessage = $('Telegram Trigger').first().json.message.text;\n\n// Format current date/time as dd/mm/yyyy hh:mm in GMT+2 (Cairo)\nfunction formatDateGMT2(date) {\n  // Convert to Cairo timezone\n  const options = {\n    timeZone: \"Africa/Cairo\",\n    day: \"2-digit\",\n    month: \"2-digit\",\n    year: \"numeric\",\n    hour: \"2-digit\",\n    minute: \"2-digit\",\n    hour12: false\n  };\n  const formatter = new Intl.DateTimeFormat(\"en-GB\", options);\n  return formatter.format(date).replace(\",\", \"\");\n}\n\nconst currentDate = formatDateGMT2(new Date());\n\n// Build array of objects for n8n\nreturn [\n  {\n    problemType: aiOutput,\n    assignedHelper: itHelpers[aiOutput] || itHelpers[\"Other problem\"],\n    ticketMessage: userMessage,\n    date: currentDate,\n    status: \"pending\"\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        272,
+        -16
+      ],
+      "id": "a9019a73-aefe-44fa-b9fd-be2023a73910",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1ofjb2ZOloKU5Js_D3N4PTeHx1XBxsylFAV3rv_s5YYI",
+          "mode": "list",
+          "cachedResultName": "Tickets System",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ofjb2ZOloKU5Js_D3N4PTeHx1XBxsylFAV3rv_s5YYI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ofjb2ZOloKU5Js_D3N4PTeHx1XBxsylFAV3rv_s5YYI/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Message": "={{ $json.ticketMessage }}",
+            "IT Desk": "={{ $json.assignedHelper }}",
+            "Problem Type": "={{ $json.problemType }}",
+            "Date Submitted": "={{ $json.date }}",
+            "Status": "={{ $json.status }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Message",
+              "displayName": "Message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Problem Type",
+              "displayName": "Problem Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "IT Desk",
+              "displayName": "IT Desk",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Date Submitted",
+              "displayName": "Date Submitted",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Date ended",
+              "displayName": "Date ended",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        480,
+        -16
+      ],
+      "id": "1277d89e-4a2d-438a-a67a-2103f70bbec4",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4FzfprVhnt81w2fx",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "={{ $json.assignedHelper }}",
+        "subject": "IT Ticket",
+        "message": "=Message :  {{ $json.ticketMessage }}\nDate Submitted : {{ $json.date }}\nStatus : Pending",
+        "responseType": "customForm",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Available date",
+              "fieldType": "date",
+              "defaultValue": "2026-03-29",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Time",
+              "fieldType": "dropdown",
+              "defaultValue": "3:00",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "3:00 pm"
+                  },
+                  {
+                    "option": "4:00 pm"
+                  },
+                  {
+                    "option": "5:00 pm"
+                  },
+                  {
+                    "option": "6:00 pm"
+                  }
+                ]
+              },
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        432,
+        208
+      ],
+      "id": "bc548165-53f2-4f49-8416-dcc3eee6c10b",
+      "name": "Send message and wait for response",
+      "webhookId": "76185a28-fe90-46d4-ae01-a0f8c69c8108",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "y9Jky9Z62DJVqV1S",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "=Date :  {{ $json.data['Available date'] }}\nTime : {{ $json.data.Time }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        640,
+        208
+      ],
+      "id": "f9566672-d389-4421-ad4d-558171e8e9e1",
+      "name": "Send a text message",
+      "webhookId": "6d4f4955-1583-4d0e-b8e6-9e1d69297aaa",
+      "credentials": {
+        "telegramApi": {
+          "id": "w8K6GOdrJACOQasW",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send message and wait for response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message and wait for response": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7113587e-ccfa-4af2-ada7-313554b41a1c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "558d88703fb65b2d0e44613bc35916258b0f0bf983c5d4730c00c424b77ca36a"
+  },
+  "id": "9G28RHbL72msPdMg",
+  "tags": []
+}
