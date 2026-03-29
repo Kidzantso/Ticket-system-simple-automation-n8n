@@ -88,8 +88,4 @@ It receives IT support requests via Telegram, classifies them into problem types
 ## 🚀 Next Steps (Future Enhancements)
 - Add **status updates** (e.g., resolved, in-progress).  
 - Track **Date ended** when ticket is closed.  
-- Enable **batch processing** for multiple tickets and tracking using calender.    
-
----
-
-Would you like me to also include a **diagram (workflow map)** in the README that visually shows the flow from Telegram → AI → JS → Sheets → Gmail → Telegram? That would make it easier for others to understand the automation at a glance.
+- Enable **batch processing** for multiple tickets and tracking using calender. 
